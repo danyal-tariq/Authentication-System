@@ -8,6 +8,8 @@ const router = express.Router();
 
 router.post('/register', validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
+router.post('/request-login-otp', validate(authValidation.requestLoginOtp), authController.requestLoginOtp);
+router.post('/verify-login-otp', validate(authValidation.verifyLoginOtp), authController.verifyLoginOtp);
 router.post('/logout', validate(authValidation.logout), authController.logout);
 router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
 router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);
@@ -316,4 +318,120 @@ module.exports = router;
  *             example:
  *               code: 401
  *               message: Reset token verification failed
+ */
+
+/**
+ * @swagger
+ * /auth/request-login-otp:
+ *   post:
+ *     summary: Request a login OTP
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email or phone number to receive the OTP
+ *             example:
+ *               email: fake@example.com
+ *     responses:
+ *       "200":
+ *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 expiresIn:
+ *                   type: number
+ *                   description: Time (in seconds) until the OTP expires
+ *             example:
+ *               message: OTP sent successfully
+ *               expiresIn: 300
+ *       "400":
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               code: 400
+ *               message: Invalid input or rate limit exceeded
+ */
+
+/**
+ * @swagger
+ * /auth/verify-login-otp:
+ *   post:
+ *     summary: Verify login OTP
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email used to receive the OTP
+ *               otp:
+ *                 type: string
+ *                 description: The OTP sent to the user
+ *             example:
+ *               email: fake@example.com
+ *               otp: 123456
+ *     responses:
+ *       "200":
+ *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *                 tokens:
+ *                   $ref: '#/components/schemas/AuthTokens'
+ *             example:
+ *               user:
+ *                 id: 1
+ *                 name: Fake Name
+ *                 email: fake@example.com
+ *               tokens:
+ *                 access:
+ *                   token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                   expires: 2023-01-01T00:00:00.000Z
+ *                 refresh:
+ *                   token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *                   expires: 2023-01-08T00:00:00.000Z
+ *       "400":
+ *         description: Bad Request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               code: 400
+ *               message: Invalid OTP
+ *       "401":
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               code: 401
+ *               message: OTP expired or already used
  */
