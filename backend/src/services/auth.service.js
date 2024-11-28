@@ -1,9 +1,11 @@
 const httpStatus = require('http-status');
 const tokenService = require('./token.service');
 const userService = require('./user.service');
+const otpService = require('./otp.service');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
+const e = require('express');
 
 /**
  * Login with username and password
@@ -102,6 +104,22 @@ const verifyResetToken = async (resetToken) => {
   }
 };
 
+const verifyOtp = async (otp, email) => {
+  try {
+    const user = await userService.getUserByEmail(email);
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'No users found with this email');
+    }
+    const token = await otpService.verifyOtp(otp, tokenTypes.OTP, user);
+    if (!token) {
+      throw new Error();
+    }
+    return user;
+  } catch (error) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'OTP verification failed ' + error);
+  }
+};
+
 module.exports = {
   loginUserWithEmailAndPassword,
   logout,
@@ -109,4 +127,5 @@ module.exports = {
   resetPassword,
   verifyEmail,
   verifyResetToken,
+  verifyOtp,
 };
