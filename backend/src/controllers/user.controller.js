@@ -34,10 +34,16 @@ const deleteUser = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const toggleTwoFactor = catchAsync(async (req, res) => {
+  const user = await userService.toggleTwoFactor(req.user);
+  res.send(user);
+});
+
 module.exports = {
   createUser,
   getUsers,
   getUser,
   updateUser,
   deleteUser,
+  toggleTwoFactor,
 };
