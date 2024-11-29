@@ -1,6 +1,6 @@
 'use server';
 
-import axios from 'axios';
+import api from '@/lib/axios';
 import { revalidatePath } from 'next/cache';
 
 export async function resetPassword(token: string, newPassword: string) {
@@ -14,8 +14,8 @@ export async function resetPassword(token: string, newPassword: string) {
   console.log(`New password: ${newPassword}`);
 
   // Simulate a delay
-  axios
-    .post(`http://localhost:5000/v1/auth/reset-password?token=${token}`, {
+  api
+    .post(`/auth/reset-password?token=${token}`, {
       password: newPassword,
     })
     .then(() => {

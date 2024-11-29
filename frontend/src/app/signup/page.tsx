@@ -4,8 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
+import Cookie from 'js-cookie';
+import api from '@/lib/axios';
 
 const schema = z
   .object({
@@ -53,8 +54,8 @@ export default function Login() {
     email: string;
     password: string;
   }) => {
-    axios
-      .post('http://localhost:5000/v1/auth/register', {
+    api
+      .post('/auth/register', {
         name: data.name,
         email: data.email,
         password: data.password,
@@ -62,11 +63,13 @@ export default function Login() {
       .then((res) => {
         console.log(res.data);
         //store token in local storage
-        localStorage.setItem('token', res.data.tokens.access.token);
-        //store user in local storage
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        //store refresh token in local storage
-        localStorage.setItem('refreshToken', res.data.tokens.refresh.token);
+        Cookie.set('token', res.data.tokens.access.token, {
+          expires: new Date(res.data.tokens.access.expires),
+        });
+        Cookie.set('user', JSON.stringify(res.data.user));
+        Cookie.set('refreshToken', res.data.tokens.refresh.token, {
+          expires: new Date(res.data.tokens.refresh.expires),
+        });
 
         router.push('/welcome');
       })

@@ -68,6 +68,12 @@ const verifyResetToken = {
   }),
 };
 
+const verifyToken = {
+  body: Joi.object().keys({
+    token: Joi.string().required(),
+  }),
+};
+
 module.exports = {
   register,
   login,
@@ -79,4 +85,5 @@ module.exports = {
   verifyResetToken,
   requestLoginOtp,
   verifyLoginOtp,
+  verifyToken,
 };

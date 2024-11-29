@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { PasswordResetForm } from './password-reset-form';
 import Link from 'next/link';
+import api from '@/lib/axios';
 
 interface PageProps {
   params: {
@@ -42,10 +42,7 @@ export default async function ResetPasswordPage({ params }: PageProps) {
 async function verifyToken(token: string): Promise<boolean> {
   console.log('Verifying token:', token.split('=')[0]);
   try {
-    await axios.post(
-      `http://localhost:5000/v1/auth/verify-reset-token?token=${token}`,
-      {}
-    );
+    await api.post(`/auth/verify-reset-token?token=${token}`, {});
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return false;

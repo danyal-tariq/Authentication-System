@@ -1,11 +1,11 @@
 'use client';
 
-import axios from 'axios';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@/hooks/use-toast';
+import api from '@/lib/axios';
 
 export default function ForgetPassword() {
   const [verificationSent, setVerificationSent] = React.useState(false);
@@ -25,9 +25,9 @@ export default function ForgetPassword() {
   });
 
   const sendVerification = (data: { email: string }) => {
-    axios
+    api
       .post(
-        'http://localhost:5000/v1/auth/forgot-password',
+        '/auth/forgot-password',
         {
           email: data.email,
         },
