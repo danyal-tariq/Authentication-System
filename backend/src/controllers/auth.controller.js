@@ -64,6 +64,11 @@ const verifyLoginOtp = catchAsync(async (req, res) => {
   res.send({ user, tokens });
 });
 
+const verifyToken = catchAsync(async (req, res) => {
+  await authService.verifyAccessToken(req.body.token);
+  res.status(httpStatus.NO_CONTENT).send();
+});
+
 module.exports = {
   register,
   login,
@@ -76,4 +81,5 @@ module.exports = {
   verifyResetToken,
   requestLoginOtp,
   verifyLoginOtp,
+  verifyToken,
 };

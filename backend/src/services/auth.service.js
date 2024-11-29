@@ -120,6 +120,16 @@ const verifyOtp = async (otp, email) => {
   }
 };
 
+const verifyAccessToken = async (token) => {
+  try {
+    console.log(token);
+    const tokenDoc = await tokenService.verifyToken(token, tokenTypes.ACCESS);
+    return tokenDoc;
+  } catch (error) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Access token is not valid');
+  }
+};
+
 module.exports = {
   loginUserWithEmailAndPassword,
   logout,
@@ -128,4 +138,5 @@ module.exports = {
   verifyEmail,
   verifyResetToken,
   verifyOtp,
+  verifyAccessToken,
 };

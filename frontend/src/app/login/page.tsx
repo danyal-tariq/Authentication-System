@@ -1,11 +1,11 @@
 'use client';
 import { useForm } from 'react-hook-form';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
+import Cookies from 'js-cookie';
+import api from '@/lib/axios';
 
 const schema = z.object({
   email: z
@@ -27,26 +27,27 @@ export default function Login() {
   const router = useRouter();
 
   const onSubmit = (data: { email: string; password: string }) => {
-    axios
-      .post('http://localhost:5000/v1/auth/login', {
+    api
+      .post('/auth/login', {
         email: data.email,
         password: data.password,
       })
       .then((res) => {
-        //show dialog with data
-        console.log(res.data);
-        //save token to local storage
-        localStorage.setItem('token', res.data.token);
-        console.log(res.data);
-        //store token in local storage
-        localStorage.setItem('token', res.data.tokens.access.token);
-        //store user in local storage
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        //store refresh token in local storage
-        localStorage.setItem('refreshToken', res.data.tokens.refresh.token);
+        //save token to cookie
+        Cookies.set('token', res.data.tokens.access.token, {
+          expires: new Date(res.data.tokens.access.expires),
+        });
+        //save user to cookie
+        Cookies.set('user', JSON.stringify(res.data.user));
+        //save refresh token to cookie
+        Cookies.set('refreshToken', res.data.tokens.refresh.token, {
+          expires: new Date(res.data.tokens.refresh.expires),
+        });
+
         router.push('/welcome');
       })
       .catch((err) => {
+        console.log(err);
         toast({
           title: 'Error',
           description: err.response.data.message,

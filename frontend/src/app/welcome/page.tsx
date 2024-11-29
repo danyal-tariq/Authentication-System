@@ -1,11 +1,69 @@
 'use client';
+import { toast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import Cookie from 'js-cookie';
+import api from '@/lib/axios';
 
 export default function Welcome() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const router = useRouter();
-  const userObject = localStorage.getItem('user');
-  const user = userObject ? JSON.parse(userObject).name : 'User';
-  const email = userObject ? JSON.parse(userObject).email : 'Email';
+  const userObjectRef = useRef(getUserObject());
+  const user = userObjectRef.current ? userObjectRef.current.name : 'User';
+  const email = userObjectRef.current ? userObjectRef.current.email : 'Email';
+
+  const logOut = () => {
+    api
+      .post('/auth/logout', {
+        refreshToken: Cookie.get('refreshToken') || '',
+      })
+      .then((res) => {
+        console.log(res.data);
+        removeCache();
+        router.push('/');
+      })
+      .catch((err) => {
+        console.log(err);
+        removeCache();
+        router.push('/');
+      });
+  };
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (!userObjectRef.current) {
+      showToast('Error', 'You are not logged in', 'bg-red-500');
+      router.replace('/');
+    } else {
+      const userID = userObjectRef.current?.id;
+      if (!userID) {
+        showToast('Error', 'User not found', 'bg-red-500');
+        router.replace('/');
+        return;
+      }
+      api
+        .get(`/users/${userID}`)
+        .then((res) => {
+          const user = res.data;
+          //save user to cookie
+          Cookie.set('user', JSON.stringify(user));
+          //set user object
+          userObjectRef.current = user;
+        })
+        .catch((err) => {
+          console.log(err);
+          showToast('Error', 'Session Expired', 'bg-red-500');
+          router.replace('/');
+        });
+    }
+  }, [mounted, router, userObjectRef]);
+
+  if (!mounted) return null;
   return (
     <main className=" justify-items-center items-center h-dvh p-4">
       <div className="flex flex-col items-center justify-start w-full h-full gap-8 border-[1px] border-gray-400/20 self-center max-w-[700px] max-h-[800px] rounded-xl">
@@ -17,13 +75,34 @@ export default function Welcome() {
         {/* log out button*/}
         <button
           className="flex flex-col gap-2 justify-self-end border border-red-500 p-2 rounded-lg hover:bg-red-500 hover:text-white transition-all"
-          onClick={() => {
-            //
-          }}
+          onClick={logOut}
         >
           <label className="text-md">Log Out</label>
         </button>
       </div>
     </main>
   );
+}
+
+function getUserObject() {
+  if (typeof window !== 'undefined') {
+    const userObject = Cookie.get('user');
+    return userObject ? JSON.parse(userObject) : null;
+  }
+  return null;
+}
+
+function removeCache() {
+  Cookie.remove('token');
+  Cookie.remove('user');
+  Cookie.remove('refreshToken');
+}
+
+function showToast(title: string, description: string, className: string) {
+  toast({
+    title,
+    description,
+    className,
+    duration: 5000,
+  });
 }

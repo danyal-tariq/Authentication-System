@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -13,6 +12,8 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
+import api from '@/lib/axios';
 
 export default function PasswordLessLoginPage() {
   const [otpSent, setOtpSent] = useState(false);
@@ -39,8 +40,8 @@ export default function PasswordLessLoginPage() {
     setOtpSent(false);
     setSending(true);
     setEmail(data.email);
-    axios
-      .post('http://localhost:5000/v1/auth/request-login-otp', {
+    api
+      .post('/auth/request-login-otp', {
         email: data.email,
       })
       .then((res) => {
@@ -65,8 +66,8 @@ export default function PasswordLessLoginPage() {
   };
 
   const verifyOTP = () => {
-    axios
-      .post('http://localhost:5000/v1/auth/verify-login-otp', {
+    api
+      .post('/auth/verify-login-otp', {
         email,
         otp: otp,
       })
@@ -76,15 +77,18 @@ export default function PasswordLessLoginPage() {
           description: 'OTP verified successfully',
           duration: 5000,
         });
-        //save token to local storage
-        localStorage.setItem('token', res.data.token);
-        console.log(res.data);
-        //store token in local storage
-        localStorage.setItem('token', res.data.tokens.access.token);
-        //store user in local storage
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        //store refresh token in local storage
-        localStorage.setItem('refreshToken', res.data.tokens.refresh.token);
+
+        //save token to cookie
+        Cookies.set('token', res.data.tokens.access.token, {
+          expires: new Date(res.data.tokens.access.expires),
+        });
+        //save user to cookie
+        Cookies.set('user', JSON.stringify(res.data.user));
+        //save refresh token to cookie
+        Cookies.set('refreshToken', res.data.tokens.refresh.token, {
+          expires: new Date(res.data.tokens.refresh.expires),
+        });
+
         router.push('/welcome');
       })
       .catch((err) => {
