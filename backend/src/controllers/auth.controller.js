@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService, otpService } = require('../services');
+const e = require('express');
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -11,8 +12,15 @@ const register = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
+
+  if (user.twoFactorEnabled) {
+    const otp = await otpService.generateAuthOtp(email);
+    await emailService.sendOtpEmail(email, otp.otp, otp.expires);
+    return res.status(httpStatus.ACCEPTED).send({ message: 'OTP sent to email' }); // Status 202
+  }
+
   const tokens = await tokenService.generateAuthTokens(user);
-  res.send({ user, tokens });
+  res.status(httpStatus.OK).send({ user, tokens }); // Status 200
 });
 
 const logout = catchAsync(async (req, res) => {

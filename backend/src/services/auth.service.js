@@ -116,7 +116,7 @@ const verifyOtp = async (otp, email) => {
     }
     return user;
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'OTP verification failed ' + error);
+    throw new ApiError(httpStatus.BAD_REQUEST, 'OTP verification failed ' + error);
   }
 };
 

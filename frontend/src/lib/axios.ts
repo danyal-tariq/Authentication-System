@@ -31,7 +31,7 @@ api.interceptors.response.use(
   (response) => response, // Return response as is if no error
   async (error) => {
     // Handle 401 (Unauthorized) errors
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && error.config.url !== '/auth/login') {
       const originalRequest = error.config;
 
       if (!isRefreshing) {

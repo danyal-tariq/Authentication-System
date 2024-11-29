@@ -79,6 +79,12 @@ const deleteUserById = async (userId) => {
   return user;
 };
 
+const toggleTwoFactor = async (user) => {
+  user.twoFactorEnabled = !user.twoFactorEnabled;
+  await user.save();
+  return user;
+};
+
 module.exports = {
   createUser,
   queryUsers,
@@ -86,4 +92,5 @@ module.exports = {
   getUserByEmail,
   updateUserById,
   deleteUserById,
+  toggleTwoFactor,
 };
